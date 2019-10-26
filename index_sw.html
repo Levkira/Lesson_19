@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>Star Wars</title>
+    <style>
+        .movies-list, .planets-list, .residents-list {
+            border: 0;
+            color: #fff;
+            font-size: 16px;
+            padding: 2px 10px;
+            width: 350px;
+            background: rgb(26, 84, 139);
+        }
+        .planets-list, .residents-list {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <form>
+        <p><select class="movies-list" size="1">
+            <option selected>Pick a movie</option> 
+        </select></p>
+        <p><select class="planets-list" size="1">
+        </select></p>
+        <p><select class="residents-list" size="1">
+        </select></p>
+    </form>
+<script>
+    let films = [];
+    let planets = [];
+    const pickMovie = document.querySelector('.movies-list');
+    const pickPlanet = document.querySelector('.planets-list');
+    const pickResidents = document.querySelector('.residents-list');
+    const xhr = new XMLHttpRequest();
+    xhr.open('get', 'https://swapi.co/api/films', true);
+    xhr.send();
+    xhr.onload = function() {
+        const response = JSON.parse(this.response);
+        films = response.results;
+        response.results.forEach(function(result){
+            const swOption = document.createElement('option');
+            swOption.innerText = result.title;
+            pickMovie.append(swOption);
+        });
+    };
+
+    pickMovie.addEventListener ('change', e => {
+        const film = films.find(function(film) {
+            return film.title === e.target.value;
+        });
+        pickPlanet.innerHTML = '<option selected>Pick a planet</option>';
+        film.planets.forEach(function(planetUrl) {
+            const xhrPlanet = new XMLHttpRequest();
+            xhrPlanet.open('get', planetUrl, true);
+            xhrPlanet.send();
+            xhrPlanet.onload = function() {
+                const response = JSON.parse(this.response);
+                planets.push(response);
+                const swOption = document.createElement('option');
+                swOption.innerText = response.name;
+                pickPlanet.append(swOption);
+                pickPlanet.style.display = 'block';
+            };
+        });
+    });
+
+    pickPlanet.addEventListener ('change', e => {
+        const planet = planets.find(function(el) {
+            return el.name === e.target.value;
+        });
+        pickResidents.innerHTML = '';
+        planet.residents.forEach(function(url) {
+            const xhrRes = new XMLHttpRequest();
+            xhrRes.open('get', url, true);
+            xhrRes.send();
+            xhrRes.onload = function() {
+                const response = JSON.parse(this.response);
+                const swOption = document.createElement('option');
+                swOption.innerText = response.name;
+                pickResidents.append(swOption);
+                pickResidents.style.display = 'block';
+            };
+        });
+    });
+
+
+</script>
+</body>
+</html>
